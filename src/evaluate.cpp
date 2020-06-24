@@ -279,7 +279,8 @@ namespace {
         if (pos.blockers_for_king(Us) & s)
             b &= line_bb(pos.square<KING>(Us), s);
 
-        attackedBy2[Us] |= attackedBy[Us][ALL_PIECES] & b;
+        int attackedByAndThis = attackedBy[Us][ALL_PIECES] & b;
+        attackedBy2[Us] |= attackedByAndThis;
         attackedBy[Us][Pt] |= b;
         attackedBy[Us][ALL_PIECES] |= b;
 
@@ -297,8 +298,10 @@ namespace {
             score += BishopOnKingRing;
 
         int mob = popcount(b & mobilityArea[Us]);
+        int crowded = popcount(attackedByAndThis & ~pos.pieces()); // Penalize many attackers on empty square
 
-        mobility[Us] += MobilityBonus[Pt - 2][mob];
+        mobility[Us] += MobilityBonus[Pt - 2][mob] - 2 * crowded;
+
 
         if (Pt == BISHOP || Pt == KNIGHT)
         {
